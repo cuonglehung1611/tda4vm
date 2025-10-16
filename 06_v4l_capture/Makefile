@@ -13,4 +13,4 @@ clean:
 	$(RM) $(APPNAME)
 
 run:
-	./$(APPNAME)
+	./$(APPNAME) /dev/video0 10

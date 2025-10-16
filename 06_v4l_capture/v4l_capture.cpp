@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cstring>
 
-#define VIDEO_DEVICE "/dev/video0"
+// #define VIDEO_DEVICE "/dev/video0"
 #define WIDTH 640
 #define HEIGHT 480
 #define FORMAT V4L2_PIX_FMT_YUYV 	// Try YUYV first
@@ -29,11 +29,11 @@ public:
 		if (buffers) delete[] buffers;
 	}
 	
-	int init() {
+	int init(char* video_device) {
 		// Open camera device
-		fd = open(VIDEO_DEVICE, O_RDWR);
+		fd = open(video_device, O_RDWR);
 		if (fd == -1) {
-			std::cerr << "Failed to open " << VIDEO_DEVICE << std::endl;
+			std::cerr << "Failed to open " << video_device << std::endl;
 			return -1;
 		}
 		
@@ -81,14 +81,37 @@ public:
 		CLEAR(req);
 		req.count = 4;
 		req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+#if USE_USER_POINTER
+		req.memory = V4L2_MEMORY_USERPTR;
+#else
 		req.memory = V4L2_MEMORY_MMAP;
+#endif
 
 		if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
 			std::cerr << "Buffer request failed!" << std::endl;
 			close(fd);
 			return -1;
 		}
-	
+		std::cout << "Required Buffers: " << req.count << std::endl;
+
+		// Request stream param
+		struct v4l2_streamparm stream_parm;
+		stream_parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		if (ioctl(fd, VIDIOC_G_PARM, &stream_parm) != 0) {
+			std::cerr << "Video get param error" << std::endl;
+			close(fd);
+			return -1;
+		}
+		stream_parm.parm.capture.capability = V4L2_CAP_TIMEPERFRAME;
+		stream_parm.parm.capture.timeperframe.numerator = 1;
+		//! set the fps value in the denominator for capturing rate
+		stream_parm.parm.capture.timeperframe.denominator = 30;
+		if (ioctl(fd, VIDIOC_G_PARM, &stream_parm) != 0) {
+			std::cerr << "Video set param error" << std::endl;
+			close(fd);
+			return -1;
+		}
+
 		// Allocate buffers
 		n_buffers = req.count;
 		buffers = new Buffer[n_buffers];
@@ -125,19 +148,25 @@ public:
 			}
 		}
 		
+		return 0;
+	}
+
+	int start() {
 		// Start capture
-		enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-		if (ioctl(fd, VIDIOC_STREAMON, &type) == -1) {
+		buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		if (ioctl(fd, VIDIOC_STREAMON, &buf_type) == -1) {
 			std::cerr << "Stream ON failed!" << std::endl;
 			delete[] buffers;
 			close(fd);
 			return -1;
 		}
-				  
 		return 0;
 	}
 	
 	void stop() {
+		if (ioctl(fd, VIDIOC_STREAMOFF, &buf_type) != 0) {
+			std::cerr << "Stream OFF failed!" << std::endl;
+		}
 		if (fd != -1) {
 			close(fd);
 			fd = -1;
@@ -189,6 +218,7 @@ private:
 	struct v4l2_format fmt;
 	unsigned int n_buffers;
 	Buffer *buffers;
+	enum v4l2_buf_type buf_type;
 	
 	// Function to print pixel format for debugging
 	std::string fourccToString(uint32_t fourcc) {
@@ -215,15 +245,18 @@ int main(int argc, char** argv)
 	}
 
 	V4L2Capture capture;
-	if (capture.init() == -1) {
+	if (capture.init(argv[1]) == -1) {
 		return -1;
 	}	
+	capture.start();
 	
 	// Create OpenCV window
     cv::namedWindow("V4L2 Capture", cv::WINDOW_AUTOSIZE);
     cv::Mat frame(HEIGHT, WIDTH, CV_8UC3);
 
-	while (true) {
+	int frameCount = 0;
+	int RUN_FOR_FRAMES = atoi(argv[2]);
+	while (!RUN_FOR_FRAMES || frameCount < RUN_FOR_FRAMES) {
 		frame = capture.captureFrame();
 		if(frame.empty()){
 			std::cerr << "Failed to capture frame" << std::endl;
@@ -234,9 +267,11 @@ int main(int argc, char** argv)
 		
 		// Exit on ESC key
         if (cv::waitKey(1) == 27) break;
+
+		std::cout << "Frame Count: " << frameCount << std::endl;
+		frameCount++;
 	}
 	
 	cv::destroyAllWindows();
-
 	return 0;
 }
