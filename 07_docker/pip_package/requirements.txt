@@ -1,0 +1,2 @@
+pycparser>=2.21
+xlsxwriter>=3.1.2
