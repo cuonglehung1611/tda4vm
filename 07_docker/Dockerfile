@@ -29,7 +29,7 @@ RUN groupadd --gid $GID $USER_NAME \
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     autoconf automake build-essential make cmake g++ gcc git git-lfs python3 python3-pip \
-    python3-dev python3-numpy
+    python3-dev python3-numpy python3-venv
 
 # Installing packages needed for Yocto & SDK Makefile builds
 RUN apt-get update \
@@ -61,15 +61,24 @@ RUN cd /tmp && mkdir ~/opencv_build && cd ~/opencv_build \
     && cd ~/opencv_build/opencv_contrib/ \
     && git checkout tags/4.5.5 -b v4.5.5-branch \
     && mkdir -p ~/opencv_build/opencv/build && cd ~/opencv_build/opencv/build \
-    && cmake -D CMAKE_BUILD_TYPE=Release \
-             -D CMAKE_INSTALL_PREFIX=/usr/local \
-             -D INSTALL_C_EXAMPLES=ON \
-             -D INSTALL_PYTHON_EXAMPLES=ON \
-             -D OPENCV_GENERATE_PKGCONFIG=ON \
-             -D BUILD_EXAMPLES=ON \
-             -D OPENCV_EXTRA_MODULES_PATH=~/opencv_build/opencv_contrib/modules .. \
+	&& cmake -D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_INSTALL_PREFIX=/usr/local \
+		-D INSTALL_C_EXAMPLES=ON \
+		-D INSTALL_PYTHON_EXAMPLES=ON \
+		-D OPENCV_GENERATE_PKGCONFIG=ON \
+		-D BUILD_EXAMPLES=ON \
+		-D WITH_TBB=ON \
+		-D WITH_V4L=ON \
+		-D WITH_OPENGL=ON \
+		-D WITH_GSTREAMER=ON \
+		-D WITH_ONNX=ON \
+        -D BUILD_opencv_python2=OFF \
+        -D BUILD_opencv_python3=OFF \
+		-D OPENCV_ENABLE_NONFREE=ON \
+		-D OPENCV_EXTRA_MODULES_PATH=~/opencv_build/opencv_contrib/modules .. \
     && make -j$(nproc) \
     && make install \
+    && ldconfig \
     && pkg-config --modversion opencv4
 
 # Set up Python dependencies for the algorithm build system (check adasvf/python-setup/default)

@@ -1,8 +1,3 @@
-docker build --build-arg USER_ID=$(id -u) \
-             --build-arg GROUP_ID=$(id -g) \
-             --build-arg USER_NAME=$(whoami) \
-             -t cuong_work .
-
 # Define the ssh public key directory for mounting from host to docker
 SSH_PUBLIC_KEY_DIR="/home/$(whoami)/.ssh"
 
