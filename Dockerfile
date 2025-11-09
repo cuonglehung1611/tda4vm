@@ -20,5 +20,17 @@ WORKDIR /home/${USER_NAME}/workspace/tda4vm
 COPY export_yolo.py .
 RUN python3 export_yolo.py
 
-# Set the default shell
-CMD ["/bin/bash"]
+# Export model
+# RUN python3 -c " \
+#     from ultralytics import YOLO; \
+#     print('🟢 Loading YOLOv8n...'); \
+#     model = YOLO('yolov8n.pt'); \
+#     print('🟢 Exporting ONNX...'); \
+#     path = model.export(format='onnx', imgsz=640, simplify=True, device='cpu'); \
+#     import os; \
+#     size_mb = os.path.getsize(path)/1024/1024; \
+#     print(f'✅ SUCCESS! {size_mb:.1f}MB: {path}'); \
+#    "
+
+# Set the working directory and switch to the new user
+USER ${USER_NAME}

@@ -52,6 +52,19 @@ RUN DEBIAN_FRONTEND=noninteractive wget -P \
     && ./ti_cgt_c7000_4.1.1.LTS_linux-x64_installer.bin  --mode unattended --installdir . \
     && rm ti_cgt_c7000_4.1.1.LTS_linux-x64_installer.bin
 
+# Install GUI dependencies BEFORE building OpenCV
+RUN apt-get update && apt-get install -y \
+    libgtk-3-dev \
+    pkg-config \
+    libavcodec-dev libavformat-dev libswscale-dev \
+    libv4l-dev \
+    libxvidcore-dev libx264-dev \
+    libjpeg-dev libpng-dev libtiff-dev \
+    gfortran \
+    libtbb-dev \
+    libatlas-base-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install opencv v4.5.5
 RUN cd /tmp && mkdir ~/opencv_build && cd ~/opencv_build \
     && git clone https://github.com/opencv/opencv.git \
@@ -72,6 +85,7 @@ RUN cd /tmp && mkdir ~/opencv_build && cd ~/opencv_build \
 		-D WITH_OPENGL=ON \
 		-D WITH_GSTREAMER=ON \
 		-D WITH_ONNX=ON \
+		-D WITH_GTK=ON \
         -D BUILD_opencv_python2=OFF \
         -D BUILD_opencv_python3=OFF \
 		-D OPENCV_ENABLE_NONFREE=ON \
