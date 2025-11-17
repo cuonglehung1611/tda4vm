@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Define the ssh public key directory for mounting from host to docker
 SSH_PUBLIC_KEY_DIR="/home/$(whoami)/.ssh"
 
@@ -12,6 +14,8 @@ docker run -it \
    --security-opt seccomp=unconfined \
    --device /dev/loop-control \
    --volume /dev:/dev \
+   -e DISPLAY=$DISPLAY \
+   -v /tmp/.X11-unix:/tmp/.X11-unix \
    -v ${WORKSPACE_DIR}:${WORKSPACE_DIR} \
    -v ${SSH_PUBLIC_KEY_DIR}:${SSH_PUBLIC_KEY_DIR} \
    cuong_work
