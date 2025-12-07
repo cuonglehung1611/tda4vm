@@ -1,8 +1,10 @@
 # Configuration
-APP       := cam_capture
+APP       ?= cam_capture
+BUILD_DIR := out
 SRC       := $(APP).cpp
-OBJS      := $(SRC:.cpp=.o)
-DEPS      := $(OBJS:.o=.d)
+OBJ       := $(BUILD_DIR)/$(APP).o
+DEP       := $(OBJ:.o=.d)
+TARGET    := $(BUILD_DIR)/$(APP)
 
 # Compiler and flags
 CXX      := g++
@@ -26,23 +28,33 @@ LIBS      := -lopencv_core                                              \
 			 -lstdc++``
 
 # ===============================================================
-.PHONY: all clean run
+.PHONY: all clean
 
-all: $(APP)
+all: $(TARGET)
 
 # Link the final executable
-$(APP): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
+$(TARGET): $(OBJ)
+	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LIBS)
 
 # Compile .cpp → .o and automatically generate dependencies
-%.o: %.cpp
+$(OBJ): $(SRC) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -MMD -MP -c $< -o $@
 
+# Create build directory if it doesn't exist
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
 # Include auto-generated dependency files (speeds up incremental builds)
--include $(DEPS)
+-include $(DEP)
 
 clean:
-	$(RM) $(OBJS) $(DEPS) $(APP)
+	$(RM) -r $(BUILD_DIR)
 
-run: $(APP)
-	./$(APP)
+# Optional: nice help message
+help:
+	@echo "Usage:"
+	@echo "  make              # build default app: cam_capture → out/cam_capture"
+	@echo "  make video_reader # build video_reader → out/video_reader"
+	@echo "  make clean        # remove entire out/ folder"
+	@echo ""
+	@echo "All binaries and temporary files are stored in ./out/"

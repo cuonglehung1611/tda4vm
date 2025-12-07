@@ -240,7 +240,7 @@ int main(int argc, char** argv)
         std::cout << "USAGE:" << std::endl;
         std::cout << "  v4l_capture <video device> <nframes>" << std::endl;
         std::cout << "      <video device> can be /dev/video1 " << std::endl;
-        std::cout << "      <nframes> if 0 runs for ever" << std::endl;
+        std::cout << "      <nframes> if 0 runs forever" << std::endl;
         return 0;
     }
 

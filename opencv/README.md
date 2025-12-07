@@ -1,13 +1,7 @@
-# 1. First time: just build
-make
+# 1. Build
+make                            # build defalut app: ./out/cam_capture
+make cam_capture                # capture frame from /dev/videoX
 
-# 2. Play your video (replace name if needed)
-make run VIDEO=your_video.avi
-
-# Or if your video is named exactly "your_video.avi", just:
-make run
-
-# Other useful commands
-make clean          # remove the executable
-make debug          # build with debug symbols
-make valgrind VIDEO=myvid.avi   # check for memory leaks
+# 2. Run
+./cam_capture /dev/videoX 10    # capture 10 frame
+./cam_capture /dev/videoX 0     # run forever
