@@ -1,3 +1,0 @@
-Reference:
-https://learnopengl.com/Getting-started/Creating-a-window
-https://www.opengl-tutorial.org/beginners-tutorials/tutorial-1-opening-a-window/#building-on-linux
