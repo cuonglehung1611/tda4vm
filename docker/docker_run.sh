@@ -19,4 +19,4 @@ docker run -it \
    -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
    -v ${WORKSPACE_DIR}:${WORKSPACE_DIR} \
    -v ${SSH_PUBLIC_KEY_DIR}:${SSH_PUBLIC_KEY_DIR} \
-   cuong_work
+   cuong_2204
