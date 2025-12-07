@@ -24,6 +24,8 @@ LIBS      := -lopencv_core                                              \
 			 -lopencv_highgui                                           \
 			 -lopencv_videoio                                           \
 			 -lopencv_video                                             \
+			 -lopencv_calib3d                                           \
+			 -lyaml-cpp                                           \
 			 -lpthread                                                  \
 			 -lstdc++``
 

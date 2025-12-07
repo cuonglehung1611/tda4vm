@@ -3,7 +3,7 @@
 
 int main()
 {
-    std::string filename = "/home/hungc/workspace/video/cam_left.avi";
+    std::string filename = "/home/hungc/workspace/video/cam_front.avi";
     cv::VideoCapture cap(filename);
 
     if (!cap.isOpened()) {
